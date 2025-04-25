@@ -44,14 +44,20 @@ const AdminDashboard = () => {
             const [usersRes, statsRes, quizzesRes] = await Promise.all([
                 api.get('/admin/users'),
                 api.get('/admin/statistics'),
-                api.get('/quizzes')
+                api.get('/admin/quizzes')
             ]);
+            
+            if (!usersRes.data || !statsRes.data || !quizzesRes.data) {
+                throw new Error('Invalid data received from server');
+            }
+            
             setUsers(usersRes.data);
             setStatistics(statsRes.data);
             setQuizzes(quizzesRes.data);
+            setError('');
         } catch (error) {
             console.error('Error fetching data:', error);
-            setError('Failed to load admin data');
+            setError(error.response?.data?.message || 'Failed to load admin data. Please check your admin privileges.');
         }
     };
 
