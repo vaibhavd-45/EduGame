@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Graduation cap base -->
+    <path d="M256 80L456 180L256 280L56 180L256 80Z" fill="#4F46E5"/>
+    <!-- Cap top -->
+    <path d="M256 280V400M256 400L156 350V230M256 400L356 350V230" fill="none" stroke="#4F46E5" stroke-width="32"/>
+    <!-- Game controller elements -->
+    <circle cx="216" cy="180" r="20" fill="#ffffff"/>
+    <circle cx="296" cy="180" r="20" fill="#ffffff"/>
+    <path d="M236 200H276" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+</svg> 
