@@ -8,6 +8,7 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login, clearError } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -20,14 +21,26 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
       console.log('Attempting login...');
       const response = await login(formData);
       console.log('Login successful:', response);
+      
+      // Store token in localStorage
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      }
+      
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Failed to login');
+      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,6 +62,7 @@ const Login = () => {
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
             required
+            disabled={loading}
           />
         </div>
         <div>
@@ -60,13 +74,17 @@ const Login = () => {
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
             required
+            disabled={loading}
           />
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+          className={`w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={loading}
         >
-          Login
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
       <p className="mt-4 text-center">

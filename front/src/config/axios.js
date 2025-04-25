@@ -2,11 +2,11 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-    baseURL: 'http://localhost:5001/api',
+    baseURL: 'https://edugame.onrender.com/api',
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: true
+    withCredentials: false
 });
 
 // Add request interceptor to add auth token
