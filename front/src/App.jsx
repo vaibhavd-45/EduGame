@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Quiz from './pages/Quiz';
+import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -26,6 +27,11 @@ function App() {
             <Route path="/quiz/:id" element={
               <PrivateRoute>
                 <Quiz />
+              </PrivateRoute>
+            } />
+            <Route path="/admin" element={
+              <PrivateRoute requireAdmin={true}>
+                <AdminDashboard />
               </PrivateRoute>
             } />
         </Routes>

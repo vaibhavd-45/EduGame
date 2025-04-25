@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
     progress: {
         completedQuizzes: {
             type: Number,
@@ -78,6 +82,27 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     }
 };
 
+// Create default admin user if not exists
+userSchema.statics.createDefaultAdmin = async function() {
+    try {
+        const adminExists = await this.findOne({ email: 'vaibhav@gmail.com' });
+        if (!adminExists) {
+            await this.create({
+                name: 'Admin',
+                email: 'vaibhav@gmail.com',
+                password: 'Vaibhav@123',
+                isAdmin: true
+            });
+            console.log('Default admin user created');
+        }
+    } catch (error) {
+        console.error('Error creating default admin:', error);
+    }
+};
+
 const User = mongoose.model('User', userSchema);
+
+// Create default admin when the application starts
+User.createDefaultAdmin();
 
 module.exports = User; 

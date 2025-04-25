@@ -1,99 +1,124 @@
-# Educational Gamification App
+# Quiz Application
 
-A full-stack web application that combines education with gamification elements to make learning more engaging and competitive.
+A full-stack quiz application with user authentication, quiz management, and progress tracking.
 
-## Tech Stack
+## Features
 
-### Frontend
-- React.js
-- TailwindCSS
-- Framer Motion (for animations)
-- Chart.js/Recharts (for data visualization)
-- Axios (for API calls)
+- User Authentication (Register/Login)
+- Admin Dashboard
+  - Quiz Management (Create, View, Delete)
+  - User Progress Tracking
+  - Statistics Overview
+- Interactive Quiz Taking
+- Progress Tracking
+- Responsive Design
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT (for authentication)
-- bcrypt (for password hashing)
+## Prerequisites
 
-## Project Structure
-
-```
-educational-gamification/
-├── frontend/                 # React frontend
-│   ├── public/
-│   └── src/
-│       ├── components/      # Reusable UI components
-│       ├── pages/          # Page components
-│       ├── context/        # React context
-│       ├── services/       # API services
-│       └── utils/          # Utility functions
-│
-└── backend/                 # Node.js backend
-    ├── config/             # Configuration files
-    ├── controllers/        # Route controllers
-    ├── models/             # Mongoose models
-    ├── routes/             # API routes
-    ├── middleware/         # Custom middleware
-    └── utils/              # Utility functions
-```
-
-## Setup Instructions
-
-### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB
 - npm or yarn
 
-### Backend Setup
-1. Navigate to backend directory
-2. Install dependencies: `npm install`
-3. Create `.env` file with:
-   ```
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   PORT=5000
-   ```
-4. Start server: `npm run dev`
+## Setup Instructions
 
-### Frontend Setup
-1. Navigate to frontend directory
-2. Install dependencies: `npm install`
-3. Create `.env` file with:
-   ```
-   REACT_APP_API_URL=http://localhost:5000
-   ```
-4. Start development server: `npm start`
+### 1. Clone the Repository
 
-## Features
-- Interactive quizzes with real-time feedback
-- Badge and reward system
-- Leaderboards and progress tracking
-- AI-powered quiz recommendations
-- User authentication and authorization
-- Mobile-responsive design
+```bash
+git clone <repository-url>
+cd <repository-name>
+```
 
-## API Endpoints
+### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Create .env file
+echo "PORT=5001
+MONGODB_URI=mongodb://localhost:27017/quiz-app
+JWT_SECRET=your_jwt_secret_key" > .env
+
+# Start the backend server
+npm start
+```
+
+### 3. Frontend Setup
+
+```bash
+# Navigate to front directory
+cd ../front
+
+# Install dependencies
+npm install
+
+# Start the frontend application
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+## Admin Account Setup
+
+To create an admin account, use the following credentials to register:
+
+```
+Username: admin@quizapp.com
+Password: Admin@123
+```
+
+After registering, you'll need to manually update the user role in MongoDB:
+
+```javascript
+// Connect to MongoDB shell and run:
+use quiz-app
+db.users.updateOne(
+  { email: "admin@quizapp.com" },
+  { $set: { role: "admin" } }
+)
+```
+
+## Environment Variables
+
+### Backend (.env)
+```
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/quiz-app
+JWT_SECRET=your_jwt_secret_key
+```
+
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:5001/api
+```
+
+## API Routes
 
 ### Authentication
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/auth/me
+- POST /api/auth/register - Register new user
+- POST /api/auth/login - User login
 
-### Quizzes
-- GET /api/quizzes
-- GET /api/quizzes/:id
-- POST /api/quizzes
-- PUT /api/quizzes/:id
-- DELETE /api/quizzes/:id
+### Quiz Management (Admin Only)
+- GET /api/admin/users - Get all users
+- GET /api/admin/statistics - Get dashboard statistics
+- POST /api/admin/quizzes - Create new quiz
+- DELETE /api/admin/quizzes/:id - Delete quiz
 
-### User Progress
-- GET /api/progress/:userId
-- GET /api/leaderboard
-- GET /api/badges/:userId
+### User Routes
+- GET /api/quizzes - Get available quizzes
+- GET /api/quizzes/:id - Get specific quiz
+- POST /api/quizzes/:id/submit - Submit quiz answers
 
-### Quiz Recommendations
-- GET /api/recommendations/:userId 
+## Tech Stack
+
+- Frontend: React, Vite, TailwindCSS
+- Backend: Node.js, Express
+- Database: MongoDB
+- Authentication: JWT
+
+## License
+
+MIT License 
