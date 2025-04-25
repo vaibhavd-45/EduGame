@@ -17,6 +17,17 @@ const adminAuth = async (req, res, next) => {
     }
 };
 
+// Get all quizzes (admin view with full details)
+router.get('/quizzes', auth, adminAuth, async (req, res) => {
+    try {
+        const quizzes = await Quiz.find().sort({ createdAt: -1 });
+        res.json(quizzes);
+    } catch (error) {
+        console.error('Error fetching quizzes:', error);
+        res.status(500).json({ message: 'Failed to fetch quizzes' });
+    }
+});
+
 // Get all users with their scores
 router.get('/users', auth, adminAuth, async (req, res) => {
     try {
@@ -32,11 +43,19 @@ router.get('/users', auth, adminAuth, async (req, res) => {
 // Create a new quiz
 router.post('/quizzes', auth, adminAuth, async (req, res) => {
     try {
-        const quiz = new Quiz(req.body);
+        const quiz = new Quiz({
+            ...req.body,
+            createdBy: req.user.id,
+            createdAt: new Date()
+        });
         await quiz.save();
         res.status(201).json(quiz);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error creating quiz:', error);
+        res.status(500).json({ 
+            message: 'Failed to create quiz',
+            error: error.message 
+        });
     }
 });
 
