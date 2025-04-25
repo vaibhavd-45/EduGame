@@ -13,29 +13,43 @@ const progressRoutes = require('./routes/progress');
 
 const app = express();
 
-// Security Middleware
-app.use(helmet());
+const allowedOrigins = [
+    'https://edu-game-teal.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+];
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://edu-game-teal.vercel.app', 'http://localhost:3000']
-        : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: function(origin, callback) {
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 86400 
 }));
 
-// Rate limiting
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
+
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000, 
+    max: 100 
 });
 app.use('/api/', limiter);
 
-// Performance Middleware
 app.use(compression());
 app.use(express.json());
 
-// Database Connection
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -48,20 +62,38 @@ mongoose.connect(process.env.MONGODB_URI, {
     process.exit(1);
 });
 
-// Health Check Route
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/progress', progressRoutes);
 
-// Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Error:', err);
+    console.error('Stack:', err.stack);
+    
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({
+            error: 'Validation Error',
+            details: Object.values(err.errors).map(e => e.message)
+        });
+    }
+    
+    if (err.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+            error: 'Invalid token'
+        });
+    }
+    
+    if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+            error: 'Token expired'
+        });
+    }
+    
     res.status(err.status || 500).json({
         error: process.env.NODE_ENV === 'production' 
             ? 'Internal Server Error' 
@@ -69,8 +101,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 Handler
 app.use((req, res) => {
+    console.log('404 Not Found:', req.method, req.url);
     res.status(404).json({ error: 'Route not found' });
 });
 
