@@ -13,43 +13,37 @@ const progressRoutes = require('./routes/progress');
 
 const app = express();
 
-const allowedOrigins = [
-    'https://edu-game-teal.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173'
-];
-
-app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    credentials: true,
+// CORS Configuration
+const corsOptions = {
+    origin: ['https://edu-game-teal.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    maxAge: 86400 
-}));
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
 
+// Apply CORS before other middleware
+app.use(cors(corsOptions));
+
+// Security Middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
+// Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100 
+    windowMs: 15 * 60 * 1000,
+    max: 100
 });
 app.use('/api/', limiter);
 
+// Performance Middleware
 app.use(compression());
 app.use(express.json());
 
+// Database Connection
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -62,15 +56,18 @@ mongoose.connect(process.env.MONGODB_URI, {
     process.exit(1);
 });
 
+// Health Check Route
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
 
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/progress', progressRoutes);
 
+// Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     console.error('Stack:', err.stack);
@@ -101,6 +98,7 @@ app.use((err, req, res, next) => {
     });
 });
 
+// 404 Handler
 app.use((req, res) => {
     console.log('404 Not Found:', req.method, req.url);
     res.status(404).json({ error: 'Route not found' });
