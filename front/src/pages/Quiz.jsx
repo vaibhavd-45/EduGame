@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../config/axios';
 
 const Quiz = () => {
   const { id } = useParams();
@@ -20,11 +20,14 @@ const Quiz = () => {
     const fetchQuiz = async () => {
       try {
         const response = await axios.get(`/quizzes/${id}`);
+        if (!response.data || !response.data.questions) {
+          throw new Error('Invalid quiz data received');
+        }
         setQuiz(response.data);
         setAnswers(new Array(response.data.questions.length).fill(-1));
       } catch (error) {
         console.error('Error fetching quiz:', error);
-        setError('Failed to load quiz');
+        setError(error.message || 'Failed to load quiz');
       } finally {
         setLoading(false);
       }
