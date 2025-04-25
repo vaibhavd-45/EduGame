@@ -40,7 +40,12 @@ router.post('/register', async (req, res) => {
     user = new User({
       name,
       email,
-      password
+      password,
+      progress: {
+        completedQuizzes: 0,
+        totalScore: 0,
+        level: 'Beginner'
+      }
     });
 
     await user.save();
@@ -52,6 +57,11 @@ router.post('/register', async (req, res) => {
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
+
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     res.status(201).json({
       token,
@@ -103,6 +113,11 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     res.json({
       token,
       user: {
@@ -134,6 +149,11 @@ router.get('/verify', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     res.json({
       user: {
         id: user._id,
@@ -151,6 +171,12 @@ router.get('/verify', async (req, res) => {
 router.get('/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
+        
+        // Set CORS headers
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
