@@ -58,11 +58,6 @@ router.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
     res.status(201).json({
       token,
       user: {
@@ -90,6 +85,12 @@ router.post('/login', async (req, res) => {
     console.log('Login attempt:', req.body);
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      console.log('Missing email or password');
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
@@ -99,6 +100,8 @@ router.post('/login', async (req, res) => {
 
     // Check password
     const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch);
+    
     if (!isMatch) {
       console.log('Invalid password for user:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
@@ -112,11 +115,6 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
-
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     res.json({
       token,
@@ -149,11 +147,6 @@ router.get('/verify', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Set CORS headers
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
     res.json({
       user: {
         id: user._id,
@@ -163,6 +156,7 @@ router.get('/verify', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Token verification error:', error);
     res.status(401).json({ message: 'Invalid token' });
   }
 });
@@ -171,14 +165,12 @@ router.get('/verify', async (req, res) => {
 router.get('/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
-        
-        // Set CORS headers
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
         res.json(user);
     } catch (error) {
+        console.error('Get user error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
