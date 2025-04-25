@@ -7,27 +7,58 @@ const { auth } = require('../middleware/auth');
 // Get user progress
 router.get('/', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id)
+        const user = await User.findById(req.user._id)
             .select('progress quizHistory')
             .populate('quizHistory.quiz', 'title category');
-
+        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Ensure progress object exists
-        if (!user.progress) {
-            user.progress = {
-                completedQuizzes: 0,
-                totalScore: 0,
-                level: 'Beginner'
-            };
-            await user.save();
-        }
-
-        res.json(user.progress);
+        res.json({
+            progress: user.progress,
+            quizHistory: user.quizHistory
+        });
     } catch (error) {
         console.error('Error fetching progress:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Update user progress
+router.put('/', auth, async (req, res) => {
+    try {
+        const { quizId, score } = req.body;
+        
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update progress
+        user.progress.completedQuizzes += 1;
+        user.progress.totalScore += score;
+
+        // Update level based on total score
+        if (user.progress.totalScore >= 1000) {
+            user.progress.level = 'Expert';
+        } else if (user.progress.totalScore >= 500) {
+            user.progress.level = 'Advanced';
+        } else if (user.progress.totalScore >= 200) {
+            user.progress.level = 'Intermediate';
+        }
+
+        // Add to quiz history
+        user.quizHistory.push({
+            quiz: quizId,
+            score: score,
+            completedAt: new Date()
+        });
+
+        await user.save();
+        res.json(user.progress);
+    } catch (error) {
+        console.error('Error updating progress:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });

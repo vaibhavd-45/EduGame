@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/axios';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -13,16 +13,17 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch quizzes
-        const quizzesRes = await axios.get('/quizzes');
-        // Fetch user progress
-        const progressRes = await axios.get('/progress');
+        // Fetch quizzes and progress in parallel
+        const [quizzesRes, progressRes] = await Promise.all([
+          api.get('/quizzes'),
+          api.get('/progress')
+        ]);
 
         setQuizzes(quizzesRes.data);
-        setProgress(progressRes.data);
+        setProgress(progressRes.data.progress);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setError('Failed to load dashboard data');
+        setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -99,7 +100,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-100 p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Completed Quizzes</h3>
-            <p className="text-3xl font-bold">{progress?.quizHistory?.length || 0}</p>
+            <p className="text-3xl font-bold">{progress?.completedQuizzes || 0}</p>
           </div>
           <div className="bg-green-100 p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Total Score</h3>
