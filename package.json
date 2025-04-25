@@ -1,0 +1,14 @@
+{
+  "name": "educational-gamification",
+  "version": "1.0.0",
+  "description": "Educational Gamification Platform",
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+} 
